@@ -1,0 +1,302 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Install packages"
+      ],
+      "metadata": {
+        "id": "RHOo9LggF-iR"
+      },
+      "id": "RHOo9LggF-iR"
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        ""
+      ],
+      "metadata": {
+        "id": "VBRmAACqF9uu"
+      },
+      "id": "VBRmAACqF9uu"
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 6,
+      "id": "06d4dec9",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "06d4dec9",
+        "outputId": "329e6a62-8aea-406c-df4c-4d73c4d7e093"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: requests in /usr/local/lib/python3.7/dist-packages (2.23.0)\n",
+            "Collecting wget\n",
+            "  Downloading wget-3.2.zip (10 kB)\n",
+            "Requirement already satisfied: bs4 in /usr/local/lib/python3.7/dist-packages (0.0.1)\n",
+            "Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.7/dist-packages (from requests) (3.0.4)\n",
+            "Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.7/dist-packages (from requests) (2021.10.8)\n",
+            "Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.7/dist-packages (from requests) (1.24.3)\n",
+            "Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.7/dist-packages (from requests) (2.10)\n",
+            "Requirement already satisfied: beautifulsoup4 in /usr/local/lib/python3.7/dist-packages (from bs4) (4.6.3)\n",
+            "Building wheels for collected packages: wget\n",
+            "  Building wheel for wget (setup.py) ... \u001b[?25l\u001b[?25hdone\n",
+            "  Created wheel for wget: filename=wget-3.2-py3-none-any.whl size=9675 sha256=e8880f9039ba2c159cb5cedff9b18eb8b4d20fcd7f48e2523a2335fb50cd9680\n",
+            "  Stored in directory: /root/.cache/pip/wheels/a1/b6/7c/0e63e34eb06634181c63adacca38b79ff8f35c37e3c13e3c02\n",
+            "Successfully built wget\n",
+            "Installing collected packages: wget\n",
+            "Successfully installed wget-3.2\n"
+          ]
+        }
+      ],
+      "source": [
+        "pip install requests wget bs4"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 7,
+      "id": "296ca8b6",
+      "metadata": {
+        "id": "296ca8b6"
+      },
+      "outputs": [],
+      "source": [
+        "import requests\n",
+        "from pprint import pprint\n",
+        "from bs4 import BeautifulSoup\n",
+        "import wget\n",
+        "import re\n",
+        "from datetime import date\n",
+        "import pandas as pd\n",
+        "import time\n",
+        "from time import time, sleep\n",
+        "\n",
+        "current_date = date.today().strftime(\"%d/%m/%Y\")"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Get link to each state page"
+      ],
+      "metadata": {
+        "id": "MyTxMdeDGC-9"
+      },
+      "id": "MyTxMdeDGC-9"
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 8,
+      "id": "260b7e6e",
+      "metadata": {
+        "id": "260b7e6e"
+      },
+      "outputs": [],
+      "source": [
+        "base_url = 'https://vidyutpravah.in/'\n",
+        "base_page = requests.get(base_url)\n",
+        "soup = BeautifulSoup(base_page.content, 'html.parser')\n",
+        "state = soup.find_all('div', class_='outer_div')"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 9,
+      "id": "08e79aaa",
+      "metadata": {
+        "id": "08e79aaa"
+      },
+      "outputs": [],
+      "source": [
+        "def get_state_link(i):\n",
+        "    beginning = 'https://vidyutpravah.in'\n",
+        "    p = state[i].find_all('a')\n",
+        "    paragraphs = []\n",
+        "    for x in p:\n",
+        "        paragraphs.append(str(x))\n",
+        "    if len(paragraphs) > 0:    \n",
+        "      final_href = paragraphs[0].split(\"=\")[2].split('>')[0].split('\"')[1]\n",
+        "      return ''.join([beginning, final_href])\n",
+        "    else:\n",
+        "      return ''.join([beginning, ''])"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Get each state name"
+      ],
+      "metadata": {
+        "id": "wMu9SkSaGGOx"
+      },
+      "id": "wMu9SkSaGGOx"
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def get_state_name(i):\n",
+        "  p = state[i].find_all('a')\n",
+        "  paragraphs = []\n",
+        "  for x in p:\n",
+        "    paragraphs.append(str(x))\n",
+        "  if len(paragraphs) > 0:\n",
+        "    x=paragraphs[0].split(\">\")[1].split(\"<\")[0].strip()\n",
+        "    return x"
+      ],
+      "metadata": {
+        "id": "2OlMS0AjN8qI"
+      },
+      "id": "2OlMS0AjN8qI",
+      "execution_count": 10,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 11,
+      "id": "ca62b379",
+      "metadata": {
+        "id": "ca62b379"
+      },
+      "outputs": [],
+      "source": [
+        "def get_list(function):\n",
+        "  my_list = []\n",
+        "  for i in range(15,49):\n",
+        "      my_list.append(function(i))\n",
+        "  return my_list\n"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Get data on energy "
+      ],
+      "metadata": {
+        "id": "ndx3p5YqGJQO"
+      },
+      "id": "ndx3p5YqGJQO"
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 12,
+      "id": "e70dfdd8",
+      "metadata": {
+        "id": "e70dfdd8"
+      },
+      "outputs": [],
+      "source": [
+        "def get_data_list(link_list):\n",
+        "      Data_list = []\n",
+        "      for i in range(len(link_list)):\n",
+        "          link = link_list[i]\n",
+        "          state_name = get_state_name(i+15)\n",
+        "\n",
+        "          if state_name != None and link != 'https://vidyutpravah.in': \n",
+        "            base_url_3 = link\n",
+        "            base_page3 = requests.get(base_url_3)\n",
+        "            soup3 = BeautifulSoup(base_page3.content, 'html.parser')\n",
+        "            \n",
+        "            yest_demand_met = soup3.find_all('span', class_='value_PrevDemandMET_en value_StateDetails_en')\n",
+        "            current_demand = soup3.find_all('span', class_='value_DemandMET_en value_StateDetails_en')\n",
+        "            shortage_dur_peak = soup3.find_all('span', class_='value_PeakDemand_en value_StateDetails_en')\n",
+        "            shortage_energy = soup3.find_all('span', class_='value_TotalEnergy_en value_StateDetails_en')\n",
+        "            period = soup3.findAll('b')[0].text\n",
+        "            appending_list = [state_name,\n",
+        "                              (' ').join(yest_demand_met[0].get_text().strip().split('\\xa0')),\n",
+        "                              (' ').join(current_demand[0].get_text().strip().split('\\xa0')),\n",
+        "                              (' ').join(shortage_dur_peak[0].get_text().strip().split('\\xa0')),\n",
+        "                              (' ').join(shortage_energy[0].get_text().strip().split('\\xa0')),\n",
+        "                              period,\n",
+        "                              current_date]\n",
+        "            Data_list.append(appending_list)\n",
+        "      return Data_list  "
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Convert to dataframe"
+      ],
+      "metadata": {
+        "id": "Lp6uE1jaGMZb"
+      },
+      "id": "Lp6uE1jaGMZb"
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "final_df = pd.DataFrame(columns = ['State',\"Yesterday State's Demand Met\",\"Current State's Demand Met\",\"Shortage for yesterday during peak\",\"Shortage for yesterday energy\",'Time','Date'])"
+      ],
+      "metadata": {
+        "id": "FBT4UIPzy0Iw"
+      },
+      "id": "FBT4UIPzy0Iw",
+      "execution_count": 13,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Make our code to run automatically (5 tomes insted of for because someone can start code like in 12:59, an to get 4 full periods will need 5 iterations"
+      ],
+      "metadata": {
+        "id": "vpJbluwJGQ1j"
+      },
+      "id": "vpJbluwJGQ1j"
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "for i in range(5):\n",
+        "    start = time()\n",
+        "    link_list = get_list(get_state_link)\n",
+        "    data_list = get_data_list(link_list)\n",
+        "    append_df = pd.DataFrame(data_list, columns = ['State',\"Yesterday State's Demand Met\",\"Current State's Demand Met\",\"Shortage for yesterday during peak\",\"Shortage for yesterday energy\",'Time','Date'])\n",
+        "    final_df = pd.concat([final_df,append_df])\n",
+        "    final_df.reset_index(drop = True, inplace = True)\n",
+        "    final_df.to_excel('energy_scrapping_final.xlsx')\n",
+        "    stop = time()\n",
+        "    sleep( max(900 - (stop-start),0) )\n"
+      ],
+      "metadata": {
+        "id": "7hH7qormF0nK"
+      },
+      "id": "7hH7qormF0nK",
+      "execution_count": null,
+      "outputs": []
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "display_name": "Python 3 (ipykernel)",
+      "language": "python",
+      "name": "python3"
+    },
+    "language_info": {
+      "codemirror_mode": {
+        "name": "ipython",
+        "version": 3
+      },
+      "file_extension": ".py",
+      "mimetype": "text/x-python",
+      "name": "python",
+      "nbconvert_exporter": "python",
+      "pygments_lexer": "ipython3",
+      "version": "3.9.7"
+    },
+    "colab": {
+      "name": "Копия блокнота \"Nothwester_webscrapping.ipynb\"",
+      "provenance": [],
+      "collapsed_sections": []
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}
